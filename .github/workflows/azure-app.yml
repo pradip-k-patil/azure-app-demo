@@ -22,18 +22,24 @@ jobs:
       id: parse
       run: |
         RESOURCE_ID="${{ github.event.inputs.resourceId }}"
-        SUBSCRIPTION_ID=$(echo $RESOURCE_ID | cut -d'/' -f3)
-        RESOURCE_GROUP=$(echo $RESOURCE_ID | cut -d'/' -f5)
-        APP_NAME=$(echo $RESOURCE_ID | cut -d'/' -f9)
+        SUBSCRIPTION_ID=$(echo "$RESOURCE_ID" | cut -d'/' -f3)
+        RESOURCE_GROUP=$(echo "$RESOURCE_ID" | cut -d'/' -f5)
+        APP_NAME=$(echo "$RESOURCE_ID" | cut -d'/' -f9)
 
-        echo "subscriptionId=$SUBSCRIPTION_ID" >> $GITHUB_OUTPUT
-        echo "resourceGroup=$RESOURCE_GROUP" >> $GITHUB_OUTPUT
-        echo "appName=$APP_NAME" >> $GITHUB_OUTPUT
+        echo "SUBSCRIPTION_ID=$SUBSCRIPTION_ID" >> $GITHUB_ENV
+        echo "RESOURCE_GROUP=$RESOURCE_GROUP" >> $GITHUB_ENV
+        echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+
+    - name: Debug ENV values
+      run: |
+        echo "SUBSCRIPTION_ID=$SUBSCRIPTION_ID"
+        echo "RESOURCE_GROUP=$RESOURCE_GROUP"
+        echo "APP_NAME=$APP_NAME"
 
     - name: 'Set Azure Subscription'
       run: |
-        echo "Using subscription: ${{ steps.parse.outputs.subscriptionId }}"
-        az account set --subscription "${{ steps.parse.outputs.subscriptionId }}"
+        echo "Using subscription: $SUBSCRIPTION_ID"
+        az account set --subscription "$SUBSCRIPTION_ID"
 
     - name: 'Restart App Service'
       run: |
