@@ -41,11 +41,19 @@ jobs:
         echo "Using subscription: $SUBSCRIPTION_ID"
         az account set --subscription "$SUBSCRIPTION_ID"
 
+    - name: Debug Variables
+      run: |
+        echo "APP_NAME: $APP_NAME"
+        echo "RESOURCE_GROUP: $RESOURCE_GROUP"
+        echo "SUBSCRIPTION_ID: $SUBSCRIPTION_ID"
+
+
     - name: 'Restart App Service'
       run: |
+        echo "Restarting app: $APP_NAME"
         az webapp restart \
-          --name ${{ steps.parse.outputs.appName }} \
-          --resource-group ${{ steps.parse.outputs.resourceGroup }}
+        --name "$APP_NAME" \
+        --resource-group "$RESOURCE_GROUP"
 
     - name: 'Wait for App Service to be Running'
       run: |
