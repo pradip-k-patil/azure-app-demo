@@ -31,10 +31,9 @@ jobs:
         echo "appName=$APP_NAME" >> $GITHUB_OUTPUT
 
     - name: 'Set Azure Subscription'
-      run: 
-        echo "Using subscription: ${{ env.SUBSCRIPTION_ID }}"
-          az account set --subscription "${{ env.SUBSCRIPTION_ID }}"
-        
+      run: |
+        echo "Using subscription: ${{ steps.parse.outputs.subscriptionId }}"
+        az account set --subscription "${{ steps.parse.outputs.subscriptionId }}"
 
     - name: 'Restart App Service'
       run: |
@@ -52,9 +51,11 @@ jobs:
             --query "state" -o tsv)
           echo "Current status: $STATUS"
           if [[ "$STATUS" == "Running" ]]; then
-            echo "App Service is running."
-            break
+            echo "✅ App Service is running."
+            exit 0
           fi
-          echo "Waiting 15 seconds..."
+          echo "⏳ Waiting 15 seconds..."
           sleep 15
         done
+        echo "❌ Timed out waiting for App Service to start."
+        exit 1
