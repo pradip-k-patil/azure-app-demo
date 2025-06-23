@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       resourceId:
-        description: 'Full Resource ID of the App Service (e.g., /subscriptions/xxxx/resourceGroups/xxxx/providers/Microsoft.Web/sites/xxxx)'
+        description: 'Full Azure App Service Resource ID'
         required: true
         type: string
 
@@ -13,13 +13,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: 'Login to Azure'
+    - name: Login to Azure
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: 'Parse Resource ID'
-      id: parse
+    - name: Parse Resource ID
       run: |
         RESOURCE_ID="${{ github.event.inputs.resourceId }}"
         SUBSCRIPTION_ID=$(echo "$RESOURCE_ID" | cut -d'/' -f3)
@@ -30,38 +29,31 @@ jobs:
         echo "RESOURCE_GROUP=$RESOURCE_GROUP" >> $GITHUB_ENV
         echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
 
-    - name: Debug ENV values
-      run: |
-        echo "SUBSCRIPTION_ID=$SUBSCRIPTION_ID"
-        echo "RESOURCE_GROUP=$RESOURCE_GROUP"
-        echo "APP_NAME=$APP_NAME"
-
-    - name: 'Set Azure Subscription'
-      run: |
-        echo "Using subscription: $SUBSCRIPTION_ID"
-        az account set --subscription "$SUBSCRIPTION_ID"
-
     - name: Debug Variables
       run: |
-        echo "APP_NAME: $APP_NAME"
-        echo "RESOURCE_GROUP: $RESOURCE_GROUP"
         echo "SUBSCRIPTION_ID: $SUBSCRIPTION_ID"
+        echo "RESOURCE_GROUP: $RESOURCE_GROUP"
+        echo "APP_NAME: $APP_NAME"
 
-
-    - name: 'Restart App Service'
+    - name: Set Azure Subscription
       run: |
-        echo "Restarting app: $APP_NAME"
-        az webapp restart \
-        --name "$APP_NAME" \
-        --resource-group "$RESOURCE_GROUP"
+        echo "Setting subscription: $SUBSCRIPTION_ID"
+        az account set --subscription "$SUBSCRIPTION_ID"
 
-    - name: 'Wait for App Service to be Running'
+    - name: Restart App Service
+      run: |
+        echo "Restarting App: $APP_NAME"
+        az webapp restart \
+          --name "$APP_NAME" \
+          --resource-group "$RESOURCE_GROUP"
+
+    - name: Wait for App Service to Start
       run: |
         echo "Waiting for App Service to start..."
         for i in {1..20}; do
           STATUS=$(az webapp show \
-            --name ${{ steps.parse.outputs.appName }} \
-            --resource-group ${{ steps.parse.outputs.resourceGroup }} \
+            --name "$APP_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
             --query "state" -o tsv)
           echo "Current status: $STATUS"
           if [[ "$STATUS" == "Running" ]]; then
