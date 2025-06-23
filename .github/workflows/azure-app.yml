@@ -31,8 +31,8 @@ jobs:
         echo "appName=$APP_NAME" >> $GITHUB_OUTPUT
 
     - name: 'Set Azure Subscription'
-      run: 
-        echo "SUBSCRIPTION_ID=$SUBSCRIPTION_ID" >> $GITHUB_ENV
+      run: echo "SUBSCRIPTION_ID=${{ env.SUBSCRIPTION_ID }}"
+        
 
     - name: 'Restart App Service'
       run: |
