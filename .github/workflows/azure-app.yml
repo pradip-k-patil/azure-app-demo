@@ -31,7 +31,7 @@ jobs:
         echo "appName=$APP_NAME" >> $GITHUB_OUTPUT
 
     - name: 'Set Azure Subscription'
-      run: az account set --subscription ${{ steps.parse.outputs.subscriptionId }}
+      run: az account set --subscription "${{ env.SUBSCRIPTION_ID }}"
 
     - name: 'Restart App Service'
       run: |
